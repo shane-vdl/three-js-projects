@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script>
+<meta name="description" content="CS4406 Computer Graphics - Exercise 5" />
+  	<meta charset="utf-8" />
+	<title>Sample Three.js</title>
+	<style>
+		#container {
+			background: #000000;
+			width: 100%;
+			height: 100%;
+			padding:.5rem;
+			
+		}
+
+		h1{
+			color: black;
+			text-align: center;
+		}
+
+		#info{
+			position: absolute;
+			top: 670px;
+			width:110%;
+			text-align: center;
+			z-index: 100;
+			display: block;
+			font-size: 250%;
+			font-weight: Bold;
+		}
+  </style>
+<meta charset=utf-8 />
+<title>CS4406 Computer Graphics - Programming Assignment 5</title>
+  
+<style id="jsbin-css">
+
+</style>
+</head>
+<body>
+<div id="container">
+	<div class="form-check form-check-inline">
+		<form id = title>
+			<label class="Title" for="">CS4406 Computer Graphics - Programming Assignment 5</label>
+		</form>
+	</div>
+  <h1> Drag mouse to rotate. </h4>
+</div>
+</body>
+  <script>'use strict';</script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://threejs.org/build/three.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.5/dat.gui.min.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/5.4.2/math.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
+  <script type="text/javascript">
+
+	// set the scene size
+	var WIDTH = 1000, HEIGHT = 800;
+
+	// set some camera attributes
+	var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 1, FAR = 5000;
+
+	// get the DOM element to attach to
+	var $container = $('#container');
+
+	// create a WebGL renderer, camera, and a scene
+      
+    var renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    //Creating the scene.
+	var scene = new THREE.Scene();
+	//color to be changed
+    	//scene.background = new THREE.Color(0x008b00);
+	var clock = new THREE.Clock();
+    
+    
+	var camera = new THREE.PerspectiveCamera(VIEW_ANGLE,ASPECT,NEAR,FAR);
+	 // the camera starts at 0,0,0 so pull it back
+	camera.position.z = 200;    	
+	// add the camera to the scene
+	scene.add(camera)
+   
+	// set up the camera controls.  Please keep in mind that what this does is move the entire scene around.
+	// because the entire scene is moving the position of the camera and lights in relation to objects within 
+	// the scene doesn't change so the lighting on the surface of the object(s) will not change either
+	
+    	//var cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+	//cameraControls.addEventListener( 'mousemove', renderer );
+    	//cameraControls.autoRotate = true;
+      
+	// start the renderer
+	renderer.setSize(WIDTH, HEIGHT);
+
+	// attach the render-supplied DOM element
+	$container.append(renderer.domElement);
+
+	// ----------------------------------------------------------------------------------------
+	//  END OF THE STANDARD CODE FOR THE ASSIGNMENT
+	//  Following this is where you must place your own custom code to complete the assignment
+	// ----------------------------------------------------------------------------------------
+
+    	var areaLight = new THREE.RectAreaLight( 0xffffff, 10);
+	var spotLight = new THREE.SpotLight( 0xffffff);
+	spotLight.position.set(0, 80,0);
+	spotLight.castShadow = true;
+
+	scene.add(areaLight, spotLight);
+
+	spotLight.shadow.mapSize.width = 512;
+	spotLight.shadow.mapSize.height = 512;
+
+	spotLight.shadow.camera.near = 0.5;
+	spotLight.shadow.camera.far = 500;
+
+	spotLight.shadow.focus = 1;
+
+
+	//Carbon atom!
+
+	var cMaterial = new THREE.MeshPhongMaterial({ 
+		color: 0xab0000, emissive: 0xaa2222,
+		shininess: 8,
+		specular: 0x0fffff
+		
+	})
+
+	//Hydrogen atom!
+
+	var hMaterial = new THREE.MeshPhongMaterial({
+		color: 0x2080aa, emissive: 0x2080aa,shininess: 8, specular: 0xffffff
+	})
+
+
+	//BONDS
+
+	var bGeometry = new THREE.CylinderGeometry(3,3,60,35);
+	var bMaterial = new THREE.MeshPhongMaterial({color: 0xffffff, emissive: 0xaaaaaa});
+
+
+	//PLANE
+
+	var pGeometry = new THREE.PlaneGeometry(500, 500, 500);
+	var pMaterial = new THREE.MeshPhongMaterial({color: 0x80f080, emissive: 0x001000, side: THREE.DoubleSide});
+
+	// Sphere vars
+
+	var cRadius = 20, cSegments = 35, cRings = 35;
+
+	var hRadius = 10, hSegments = 35, hRings = 35;
+
+
+	var carbon = new THREE.Mesh(
+		new THREE.SphereGeometry(cRadius, cSegments, cRings), hMaterial);	
+
+	
+	//hydrogen atoms
+
+	var hydrogen1 = new THREE.Mesh(
+		new THREE.SphereGeometry(hRadius, hSegments, hRings), hMaterial);
+
+
+	var hydrogen2 = new THREE.Mesh(
+		new THREE.SphereGeometry(hRadius, hSegments, hRings), hMaterial);
+	
+	var hydrogen3 = new THREE.Mesh(
+		new THREE.SphereGeometry(hRadius, hSegments, hRings), hMaterial
+	);
+
+	var hydrogen4 = new THREE.Mesh(
+		new THREE.SphereGeometry(hRadius, hSegments, hRings), hMaterial
+	);
+
+	//BONDS
+
+
+	var bond1 = new THREE.Mesh(bGeometry, bMaterial);
+	var bond2 = new THREE.Mesh(bGeometry, bMaterial);
+	var bond3 = new THREE.Mesh(bGeometry, bMaterial);
+	var bond4 = new THREE.Mesh(bGeometry, bMaterial);
+
+	var CH4 = new THREE.Group();
+
+	CH4.add(carbon, hydrogen1, hydrogen2, hydrogen3, hydrogen4, bond1, bond2, bond3, bond4);
+
+	//PLANES
+
+	var plane = new THREE.Mesh(pGeometry, pMaterial);
+
+	carbon.castShadow = true;
+	hydrogen1.castShadow = true;
+	hydrogen2.castShadow = true;
+	hydrogen3.castShadow = true;
+	hydrogen4.castShadow = true;
+	bond1.castShadow = true;
+	bond2.castShadow = true;
+	bond3.castShadow = true;
+	bond4.castShadow = true;
+	plane.receiveShadow = true;
+
+	scene.add(CH4, plane);
+
+
+
+	hydrogen1.position.y = 50;
+
+	hydrogen2.position.y = -25;
+	hydrogen2.position.z = 50;
+
+
+	hydrogen3.position.x = -50;
+	hydrogen3.position.y = -25;
+	hydrogen3.position.z = -10;
+
+
+	hydrogen4.position.x = 50;
+	hydrogen4.position.y = -25;
+	hydrogen4.position.z = -10;
+
+	bond1.position.y = 20;
+
+	bond2.position.y = -10;
+	bond2.position.z = 15;
+	bond2.rotation.x = -20;
+
+	bond3.position.x = -15;
+	bond3.position.y = -10;
+	bond3.rotation.y = -0.2;
+	bond3.rotation.z = -20;
+
+	bond4.position.x = -15;
+	bond4.position.y = -10;
+	bond4.position.z = -6;
+	bond4.rotation.y = 0.2;
+	bond4.rotation.z = 20;
+
+	plane.position.y = -55
+	plane.rotation.x = 300;
+
+
+
+	function onMouseMove(event){
+		CH4.rotation.x += event.movementY * 0.002;
+
+		CH4.rotation.y += event.movementX * 0.002;
+	}
+
+	function animate() {   
+		requestAnimationFrame(animate);   
+		render();   
+		}      
+		
+	function render() {   
+		renderer.render(scene, camera);   
+		}
+		
+	animate();
+	
+	</script>
+	
+</html>
+

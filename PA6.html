@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script>
+<meta name="description" content="CS4406 Computer Graphics - Exercise #1" />
+  	<meta charset="utf-8" />
+	<title>Programming Assignment Unit 6</title>
+	<style>
+		#container {
+			background: #000000;
+			width: 100%;
+			height: 100%;
+		}
+  </style>
+<meta charset=utf-8 />
+<title>CS4406 Computer Graphics - Exercise #6</title>
+  
+<style id="jsbin-css">
+
+</style>
+</head>
+<body>
+<div id="container">
+</div>
+</body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script> 
+	<script src="https://threejs.org/build/three.js"></script>
+        <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script>
+	<script src="https://js/math.js"></script>
+
+	<script type="text/javascript">
+
+
+	// set the scene size
+	var WIDTH = 500, HEIGHT = 500;
+
+	// set some camera attributes
+	var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 1, FAR = 1000;
+
+	// get the DOM element to attach to
+	var $container = $('#container');
+
+	// create a WebGL renderer, camera, and a scene
+ 	var renderer = new THREE.WebGLRenderer({
+		 //antialiasing allows us to have a cleaner image
+		 antialias: true
+	 });
+	renderer.shadowMap.enabled=true;
+    	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+	var scene = new THREE.Scene();
+	var clock = new THREE.Clock();
+	var camera = new THREE.PerspectiveCamera(VIEW_ANGLE,ASPECT,NEAR,FAR);
+	var cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+	var controls = new THREE.OrbitControls(camera, renderer.domElement);
+	controls.enabled = false;
+
+
+	//Here, we set the lighting parameters. By definition, our light has to come from the right of both the moon and the earthObject.
+	//Therefore, we either need directional light (it cannot be hemisphere light because it doesn't cast shadows).
+
+	var light = new THREE.DirectionalLight( 0xfdfcf0, 1 )
+    	light.position.set(70,20,80)
+   	light.castShadow = true; 
+	//light.shadowDarkness = 10.5;
+	new THREE.CameraHelper( light.shadow.camera );
+    	scene.add( light );
+
+	//This helps us seeing where the light is coming from.
+	// var helper = new THREE.DirectionalLightHelper( light, 5 );
+	// scene.add( helper );
+
+
+
+	 // the camera starts at 0,0,0 so pull it back
+	camera.position.z = 300;
+		
+	// add the camera to the scene
+	scene.add(camera)
+   
+	// set up the camera controls.  Please keep in mind that what this does is move the entire scene around.
+	// because the entire scene is moving the position of the camera and lights in relation to objects within 
+	// the scene doesn't change so the lighting on the surface of the object(s) will not change either
+
+	 	//cameraControls =
+    	
+      
+	// start the renderer
+	renderer.setSize(WIDTH, HEIGHT);
+
+	// attach the render-supplied DOM element
+	$container.append(renderer.domElement);
+
+	
+
+	// ----------------------------------------------------------------------------------------
+	//  END OF THE STANDARD CODE FOR THE ASSIGNMENT
+	//  Following this is where you must place your own custom code to complete the assignment
+	// ----------------------------------------------------------------------------------------
+
+
+
+	//----------------EARTH-------------
+	var geometry = new THREE.SphereGeometry( 50, 50, 50 );
+	var material = new THREE.MeshBasicMaterial( { 
+		//here, I am adding the texture
+		map: new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/c/cf/WorldMap-A_non-Frame.png")
+		
+		} );
+	geometry.receiveShadow = true;
+	geometry.castShadow = true;
+	var sphere = new THREE.Mesh( geometry, material );
+	
+	
+
+//this is a way of verifying that my sphere is right
+	// const wireframe = new THREE.WireframeGeometry (geometry);
+	// const line = new THREE.LineSegments(wireframe);
+	// line.material.dephtTest = true;
+	// line.material.opacity = 0.25;
+	// line.material.transparent = true;
+		
+	scene.add(sphere );
+	
+
+	//----------------MOON-----------
+
+	const moon = new THREE.SphereGeometry( 15, 50, 50 );
+	const material1 = new THREE.MeshBasicMaterial( { 
+		//here I am adding the texture
+		 map: new THREE.TextureLoader().load("https://upload.wikimedia.org/wikipedia/commons/d/db/Moonmap_from_clementine_data.png"),
+		 
+		 } );
+
+	moon.receiveShadow = true;
+	moon.castShadow = true;
+	const sphere1 = new THREE.Mesh( moon, material1 );
+	//I am setting the distance of the moon to 70.
+	//this is the distance from Earth
+	sphere1.position.x = 70;
+
+//this is a way of verifying that my sphere is right
+	// const wireframe = new THREE.WireframeGeometry (moon);
+	// const line = new THREE.LineSegments(wireframe);
+	// line.material.dephtTest = true;
+	// line.material.opacity = 0.25;
+	// line.material.transparent = true;
+		
+	scene.add(sphere1);
+
+
+	//This part is basically applied to the moon.
+	// This is the distance from earth
+	var r = 70;
+	//This is the value incremented
+	var theta = 0;
+	//and this is the rate of change of rotation in the moon's trajectory.
+	var dTheta = 0.8 * Math.PI / 180;
+
+
+       // ----------------------------------------------------------------------------------------
+       // END OF YOUR CUSTOM CODE FOR THE ASSIGNMENT
+       // The rendering functions that follow are standard and can be used for this assignment.
+       // You are welcome to customize them or create your own if you desire, however, you can
+       // simply use the code provided.
+  
+    
+	// Standard functions for rendering the scene.  Notice how we have the animate function 
+	// which submits a call to requestAnimationFrame to call animate.   This creates a loop
+	// that will render the scene again whenever something within the scene changes.
+	function animate() {
+
+		
+		renderer.render(scene, camera);
+		requestAnimationFrame(animate);
+		render();
+	}
+
+	function render() {
+		cameraControls.update();
+		
+
+	//Now I need to set the rotation of the Earth (which by definition is faster than the moon's)
+	sphere.rotation.y += 0.01; 
+	//And the rotation of the Moon (which is slower than the Earth's)
+	sphere1.rotation.y += .03;
+
+
+	//This is the part that handles the moon's rotation around the Earth
+	theta -= dTheta;
+	sphere1.position.x = r * Math.cos(theta);
+	sphere1.position.z = r * Math.sin(theta);
+
+
+		renderer.render(scene, camera);
+	}
+	animate();
+	</script>
+</html>

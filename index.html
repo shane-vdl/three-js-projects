@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script>
+<meta name="description" content="CS4406 Computer Graphics - Exercise 5" />
+  	<meta charset="utf-8" />
+	<title>Sample Three.js</title>
+	<style>
+		#container {
+			background: #06335d;
+			color:#e7e7e7;
+			width: 100%;
+			height: 100%;
+			padding:.5rem;
+			
+		}
+
+		h1{
+			color: black;
+			text-align: center;
+		}
+
+		#info{
+			position: absolute;
+			top: 670px;
+			width:110%;
+			text-align: center;
+			z-index: 100;
+			display: block;
+			font-size: 250%;
+			font-weight: Bold;
+		}
+  </style>
+<meta charset=utf-8 />
+<title>CS4406 Computer Graphics - Programming Assignment 5</title>
+  
+<style id="jsbin-css">
+
+</style>
+</head>
+<body>
+<div id="container">
+  <h1> Drag mouse to rotate. </h4>
+</div>
+</body>
+  <script>'use strict';</script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+  <script src="https://threejs.org/build/three.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.5/dat.gui.min.js"></script>
+  <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script> 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/5.4.2/math.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
+  <script type="text/javascript">
+
+	// set the scene size
+	var WIDTH = 1000, HEIGHT = 800;
+
+	// set some camera attributes
+	var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 1, FAR = 5000;
+
+	// get the DOM element to attach to
+	var $container = $('#container');
+
+	// create a WebGL renderer, camera, and a scene
+      
+    var renderer = new THREE.WebGLRenderer({
+      antialias: true
+    });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    //Creating the scene.
+	var scene = new THREE.Scene();
+
+	var clock = new THREE.Clock();
+    
+    
+	var camera = new THREE.PerspectiveCamera(VIEW_ANGLE,ASPECT,NEAR,FAR);
+	 // the camera starts at 0,0,0 so pull it back
+	camera.position.z = 200;
+	camera.position.y = 50;	
+	// add the camera to the scene
+	scene.add(camera)
+
+	// set up the camera controls.  Please keep in mind that what this does is move the entire scene around.
+	// because the entire scene is moving the position of the camera and lights in relation to objects within 
+	// the scene doesn't change so the lighting on the surface of the object(s) will not change either
+	
+    	var cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+	cameraControls.addEventListener( 'mousemove', renderer );
+    	cameraControls.autoRotate = false;
+      
+	// start the renderer
+	renderer.setSize(WIDTH, HEIGHT);
+
+	// attach the render-supplied DOM element
+	$container.append(renderer.domElement);
+
+	// ----------------------------------------------------------------------------------------
+	//  END OF THE STANDARD CODE FOR THE ASSIGNMENT
+	//  Following this is where you must place your own custom code to complete the assignment
+	// ----------------------------------------------------------------------------------------
+
+
+	//We start off with our basic settings: light, castShadow, position of the light
+	// and creation of the scene. 
+
+	var areaLight = new THREE.RectAreaLight( 0xffffff, 10);
+	var spotLight = new THREE.SpotLight( 0xffffff);
+	spotLight.position.set(0, 80,0);
+	spotLight.castShadow = true;
+
+	scene.add(areaLight, spotLight);
+
+	spotLight.shadow.mapSize.width = 512;
+	spotLight.shadow.mapSize.height = 512;
+
+	spotLight.shadow.camera.near = 0.5;
+	spotLight.shadow.camera.far = 500;
+
+	spotLight.shadow.focus = 1;
+
+
+
+
+	//Here, we define our molecule as being our 3D object.
+	var molecule = new THREE.Object3D();
+	
+	//Here we define the colors of our molecule
+	var blueMaterial = new THREE.MeshBasicMaterial({color: 0x038dff});
+	
+	var redMaterial = new THREE.MeshBasicMaterial({color: 0xff0000});
+	
+	var whiteMaterial = new THREE.MeshBasicMaterial({color: 0xffffff});
+
+
+	//Carbon Atom
+	var carbonGeometry = new THREE.SphereGeometry(20, 32, 32);
+	var carbon = new THREE.Mesh(carbonGeometry, redMaterial);
+	carbon.castShadow = true;
+	carbon.receiveShadow = true;
+	molecule.add(carbon);
+
+	//Hydrogen Atom (these are smaller).
+	var hydrogenGeometry = new THREE.SphereGeometry(7, 16, 16);
+	hydrogenGeometry.translate(0,30,0);
+	var hydrogen = new THREE.Mesh(hydrogenGeometry,blueMaterial);
+	hydrogen.castShadow = true;
+	hydrogen.receiveShadow = true;
+
+	var bondGeometry = new THREE.CylinderGeometry(3,3,30,16);
+	bondGeometry.translate(0,15,0);
+	var bond = new THREE.Mesh(bondGeometry, whiteMaterial);
+	bond.castShadow = true;
+	bond.receiveShadow = true;
+
+	//Atom bond 
+	var atomBond = new THREE.Object3D();
+	atomBond.add(hydrogen);
+	atomBond.add(bond);
+
+
+	//We create four copies of that atomBond
+
+	//First atom with bond
+	var h1 = atomBond.clone();
+	h1.position.setY(15);
+	molecule.add(h1);
+	
+	//Second atom with bond
+	var h2 = atomBond.clone();
+	h2.position.setX(10);
+	h2.position.setY(-10);
+	h2.position.setZ(-10);
+	h2.rotateZ(Math.PI * 4 / 3);
+	h2.rotateX(Math.PI * 7 / 4);
+	molecule.add(h2);
+
+	//Third atom with bond
+	var h3 = atomBond.clone();
+	h3.position.setY(-12);
+	h3.position.setZ(12);
+	h3.rotateX(Math.PI * 3 / 4);
+	molecule.add(h3);
+
+	//Fourth atom with bond
+	var h4 = atomBond.clone();
+	h4.rotateZ(Math.PI * 3 / 4);
+	h4.rotateX(Math.PI * 7 / 4);
+	h4.position.setX(-10);
+	h4.position.setY(-10);
+	h4.position.setZ(-10);
+	molecule.add(h4);
+
+	scene.add(molecule);
+
+
+
+	//Now we add a plane to the scene.
+	
+	var planeGeometry = new THREE.PlaneBufferGeometry(700, 700, 400, 520);
+	var planeMaterial = new THREE.MeshStandardMaterial({
+		color: 0x008b00,
+		side: THREE.DoubleSide
+	})
+
+	var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+	plane.position.setX(1);
+	plane.position.setY(-100);
+	plane.position.setZ(-300);
+	plane.receiveShadow = false;
+	scene.add(plane);
+
+	//Here, we add interaction with the mouse to rotate the molecule.
+
+	var isDragging = false;
+	var previousMousePosition = {
+		x: 0,
+		y: 0,
+	}
+
+	//We use conversion from Degrees to Radians 
+	const toRadians = (angle) =>{
+		return angle * (Math.PI / 180);
+
+	};
+	//And vice versa, because we are dealing with spheres.
+	const toDegrees = (angle) =>{
+		return angle * ( 180 / Math.PI );
+	};
+
+	const renderArea = renderer.domElement;
+
+	renderArea.addEventListener('mousedown', (e) =>{
+		isDragging = true;
+	});
+
+	renderArea.addEventListener('mousemove', (e) =>{
+		var deltaMove = {
+			x: e.offsetX - previousMousePosition.x, 
+			y: e.offsetY - previousMousePosition.y
+		};
+		//if we are dragging, we need to use Quaternions to work out the 3D rotation.
+		if (isDragging){
+			let deltaRotationQuaternion = new THREE.Quaternion().setFromEuler(
+				new THREE.Euler(toRadians(deltaMove.y *1), toRadians(deltaMove.x *1), 0, 'XYZ')
+			);
+			molecule.quaternion.multiplyQuaternion(deltaRotationQuaternion, molecule.quaternion);
+		}
+		previousMousePosition = {
+			x: e.offsetX,
+			y: e.offsetY
+		};
+	});
+
+	document.addEventListener('mouseup', (e) => {
+		isDragging = false;
+	});
+
+	
+
+
+
+
+       // ----------------------------------------------------------------------------------------
+       // END OF YOUR CUSTOM CODE FOR THE ASSIGNMENT
+       // The rendering functions that follow are standard and can be used for this assignment.
+       // You are welcome to customize them or create your own if you desire, however, you can
+       // simply use the code provided.
+  
+    	//And vice versa, because we are dealing with spheres.		
+    	//if we are dragging, we need to use QuQuaternionS s to work out the 3D rotation.
+	// Standard functions for rendering the scene.  Notice how we have the animate function 
+	// which submits a call to requestAnimationFrame to call animate.   This creates a loop
+	// that will render the scene again whenever something within the scene changes.
+	function animate() {
+		requestAnimationFrame(animate);
+		render();
+	}
+
+	function render() {
+		cameraControls.update();
+		renderer.render(scene, camera);
+	}
+	animate();
+	</script>
+</html>

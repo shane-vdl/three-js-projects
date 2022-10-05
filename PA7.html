@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script>
+<meta name="description" content="CS4406 Computer Graphics - Exercise #1" />
+  	<meta charset="utf-8" />
+	<title>Programming Assignment - Unit 7</title>
+	<style>
+		#container {
+			background: #000000;
+			width: 100%;
+			height: 100%;
+		}
+  </style>
+<meta charset=utf-8 />
+<title>CS4406 - Computer Graphics -Programming Assignment - Unit 7</title>
+  
+<style id="jsbin-css">
+
+</style>
+</head>
+<body>
+<div id="container">
+</div>
+</body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script> 
+	<script src="http://uopeopleweb.com/js/dat.gui.min.js"></script>
+	<script src="https://threejs.org/build/three.js"></script>
+        <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script>
+	<script src="http://uopeopleweb.com/js/math.js"></script>
+	<script src="http://uopeopleweb.com/js/Detector.js"></script>
+	<script type="text/javascript">
+
+
+	// set the scene size
+	var WIDTH = 500, HEIGHT = 500;
+
+	// set some camera attributes
+	var VIEW_ANGLE = 45, ASPECT = WIDTH / HEIGHT, NEAR = 1, FAR = 1000;
+
+	// get the DOM element to attach to
+	var $container = $('#container');
+
+	// create a WebGL renderer, camera, and a scene
+      
+    var renderer = new THREE.WebGLRenderer();
+	var scene = new THREE.Scene();
+	var clock = new THREE.Clock();
+	var camera = new THREE.PerspectiveCamera(VIEW_ANGLE,ASPECT,NEAR,FAR);
+	 // the camera starts at 0,0,0 so pull it back
+	camera.position.z = 200;    	
+	// add the camera to the scene
+	scene.add(camera)
+   
+	// set up the camera controls.  Please keep in mind that what this does is move the entire scene around.
+	// because the entire scene is moving the position of the camera and lights in relation to objects within 
+	// the scene doesn't change so the lighting on the surface of the object(s) will not change either
+	var cameraControls = new THREE.OrbitControls(camera, renderer.domElement);
+	cameraControls.addEventListener( 'mousemove', renderer );
+    	cameraControls.autoRotate = true;
+      
+	// start the renderer
+	renderer.setSize(WIDTH, HEIGHT);
+
+	// attach the render-supplied DOM element
+	$container.append(renderer.domElement);
+
+	// ----------------------------------------------------------------------------------------
+	//  END OF THE STANDARD CODE FOR THE ASSIGNMENT
+	//  Following this is where you must place your own custom code to complete the assignment
+	// ----------------------------------------------------------------------------------------
+	
+	var a = 1.0;
+	var b = 1.0;
+
+	//The following function computes the position of Z in relation to the x and y axis.
+	function f(u, v, p) {
+
+		x = u * 2 - 1; 
+
+		y = v * 2 - 1;
+
+		p.set(x, y(x*x)/(a*a) - (y*y)/(b*b));
+	}
+
+
+	//Here, we set the minimum value to -1.
+	var x_min = -1.0;
+
+	var y_min = -1.0;
+
+	//Then we set the maximum value to 1.
+	var x_max = 1.0;
+
+	var y_max = 1.0;
+
+	//Knowing that the output should have colored vertices
+
+	function getVertexColor(point){
+
+		return new THREE.Color(point.x * 0.5 + 0.5, point.y * 0.5 + 0.5, point.z * 0.5 + 0.5);
+	}
+
+	function setVertexColor(geometry){
+
+		for (var i = 0, i < geometry.faces.length; i++){
+
+			var face = geometry.faces[i];
+
+			face.vertexColor = getVertexColor(geometry.vertices[face a]), getVertexColor(geometry.vertices[face b], getVertexColor(geometry.vertices[face c]));
+		}
+	}
+
+	function createPlaneGrid(size, steps){
+	
+		var group = new THREE.Group();
+		var material = new THREE.LineBasicMaterial({
+			color:0x000000, 
+			transparent:true, 
+			opacity: 0.25});
+
+
+
+		for (var i = 0, i < steps.length; i++){
+			
+			var f =(i/steps) - 0.5;
+			var geometry = new THREE.Geometry();
+
+
+			geometry.vertices.push(new THREE.Vector3(f * size, -size * 0.5), new THREE.Vector3(f * size, size * 0.));
+
+			var line = new THREE.Line(geometry, material);
+			group.add(line);
+		}
+
+		for(var i = 0, i < steps; i++){
+			var f = (i/steps) - 0.5;
+			var geometry = new THREE.Geometry();
+			geometry.vertices.push(new THREE.Vector3(-size * 0.5, f * size, 0), new THREE.Vector3(-size * 0.5, f * size, size * 0));
+
+			var line = new THREE.Line(geometry, material);
+			group.add(line);
+		}
+		return group;
+		}
+
+	 //======== LIGHTS ======== //
+	const ambienLight = new THREE.AmbientLight(0xffffff, 0.10);
+	camera.add(ambienLight);
+
+
+	// ======== PLANE ======== // 
+	const plane = new THREE.Mesh(
+		new THREE.PlaneGeometry(14,14,14,14),
+		new THREE.MeshBasicMaterial({
+			color: 0x505050, 
+			wireframe: true,
+			transparent: true,
+			opacity:0.25
+		})
+	);
+
+	//Now we take care of the rotation
+	plane.rotation.x = - Math.PI / 2;
+	scene.add(plane);
+
+
+	// Hyperbolic Paraboloid equation and positioning
+
+	var planeGeometry = new THREE.PlaneBufferGeometry(8, 8, 20, 20);
+	planeGeometry.rotateX(Math.PI * 0.5);
+
+	var v = new THREE.Vector3();
+	var positions = planeGeometry.attributes.position;
+
+	for(var i = 0, i < positions.count; i++){
+		v.fromBufferAttribute(positions, i);
+		positions.setY(i, (v.x * v.x) - (v.z * v.z)) * 0.3);
+	}
+	planeGeometry.computeVertexNormals();
+
+
+	// Mesh for hyperbolic paraboloid
+
+	var paraboloid = new THREE.Mesh(planeGeometry, new THREE.MeshNormalMaterial({side: THREE.DoubleSide}));
+	scene.add(paraboloid);
+
+
+	//The following function creates the axis arrows
+
+	var arrowCylinder = new THREE.CylinderGeometry();(0.015, 0.015, 0.2, 32);
+	var arrowCone = new THREE.ConeGeometry(0.03, 0.1, 32);
+
+
+	///Axis helper
+
+	//Creating the axis from the arrows that show x,y,z.
+	function axisArrow(color){
+		var group = new THREE.Group();
+		var arrowMaterial = new THREE.MeshPhongMaterial({
+			color: color, 
+			specular: 0x222222,
+			shininess:100
+		})
+
+		var cylinder = new THREE.Mesh(arrowCylinder, arrowMaterial);
+		cylinder.position.set(0,0.125, 0);
+		group.add(cylinder);
+		var cone = new THREE.Mesh(arrowCone, arrowMaterial);
+		cone.position.set(0, 0.275, 0);
+		group.add(cone);
+		return group;
+	}
+
+
+	//creating the axis Helper
+	function axisHelper(){
+
+		var group = new THREE.Group();
+		var xAxis = axisArrow(new THREE.Color(0.0, 1.0, 0.0));
+		var yAxis = axisArrow(new THREE.Color(1.0, 0.0, 0.0));
+		var zAxis = axisArrow(new THREE.Color(0.0, 0.0, 1.0));
+		
+		xAxis.rotateZ(-Math.PI * 0.5);
+		zAxis.rotateX(-Math.PI * 0.5);
+
+		group.add(xAxis);
+		group.add(yAxis);
+		group.add(zAxis);
+
+
+
+		var CubeGeometry = new THREE.BoxGeometry(0.05, 0.05, 0.05);
+		var cubeMaterial = new THREE.MeshPhongMaterial({
+			color: 0x808080, 
+			specular: 0x222222,
+			shininess: 100
+		})
+
+		var cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+		group.add(cube);
+
+		return group;
+	}
+
+	//creating axis and adding them to the scene.
+	var axisCamera = axisHelper();
+	scene.add(axisCamera);
+
+	var axisOrigin = axisHelper();
+	scene.add(axisOrigin);
+
+
+	//creating sun light and positioning it.
+	var sunLight = new THREE.DirectionalLight(0xffffff, 1.0);
+
+	sunLight.position.set(100, 100, 100);
+
+	sunLight.castShadow = true;
+
+	sunLight.shadow.camera.left = -100;
+
+	sunLight.shadow.camera.right = 100;
+
+	sunLight.shadow.camera.bottom = -100;
+	
+	sunLight.shadow.camera.top = -100;
+
+	scene.add(sunLight);
+
+
+	renderer.setClearColor(0xaaaabb, 1.0);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCDSoftShadowMap;
+	
+	
+
+       // ----------------------------------------------------------------------------------------
+       // END OF YOUR CUSTOM CODE FOR THE ASSIGNMENT
+       // The rendering functions that follow are standard and can be used for this assignment.
+       // You are welcome to customize them or create your own if you desire, however, you can
+       // simply use the code provided.
+  
+    
+	// Standard functions for rendering the scene.  Notice how we have the animate function 
+	// which submits a call to requestAnimationFrame to call animate.   This creates a loop
+	// that will render the scene again whenever something within the scene changes.
+	function animate() {
+		requestAnimationFrame(animate);
+		render();
+	}
+
+	function render() {
+
+		cameraControls.update();
+
+
+		var cam_x = new THREE.Vector3(1,0,0).applyQuaternion(camera.quaternion);
+		var cam_y = new THREE.Vector3(0,1,0).applyQuaternion(camera.quaternion);
+		var cam_z = new THREE.Vector3(0,0,1).applyQuaternion(camera.quaternion);
+
+		axisCamera.scale.set(0.015, 0.015, 0.015);
+
+		axisCamera.position.copy(camera.position);
+		axisCamera.position.addScaledVector(cam_x, -0.01875);
+		axisCamera.poosition.addScaledVector(cam_y, 0.01875);
+		axisCamera.position.addScaledVector(cam_z, -0.06);
+
+
+		renderer.render(scene, camera);
+	}
+	animate();
+	</script>
+</html>

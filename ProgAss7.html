@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="text/javascript" src="https://getfirebug.com/firebug-lite-debug.js"></script>
+<meta name="description" content="CS4406 Computer Graphics - Programming Assignment 7" />
+  	<meta charset="utf-8" />
+	<title>Programming Assignment - Unit 7</title>
+	<style>
+		#container {
+			background: #b8b8b8;
+			width: 100%;
+			height: 100%;
+		}
+  </style>
+<meta charset=utf-8 />
+<title>CS4406 - Computer Graphics - Programming Assignment -Unit 7</title>
+  
+<style id="jsbin-css">
+
+</style>
+</head>
+<body>
+<div id="container">
+</div>
+</body>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script> 
+	<script src="https://threejs.org/build/three.js"></script>
+        <script src="https://cdn.rawgit.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js"></script>
+
+	<script type="module">
+
+		import * as THREE from "https://cdn.skypack.dev/three@0.133.1";
+		import {
+		  OrbitControls
+		} from "https://cdn.skypack.dev/three@0.133.1/examples/jsm/controls/OrbitControls.js";
+		
+
+		//Let's set up the scene, cameran, etc.
+		let scene = new THREE.Scene();
+
+		let camera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 10);
+
+		//Setting camera position
+		camera.position.set(1, 1.5, 1).setLength(2.5);
+
+		camera.lookAt(scene.position);
+
+		//Setting the rendering and antialiasing
+		let renderer = new THREE.WebGLRenderer({
+		  antialias: true
+		});
+
+		renderer.setSize(innerWidth, innerHeight);
+
+		renderer.setClearColor(0xA9A9A9);
+
+		document.body.appendChild(renderer.domElement);
+		
+		let controls = new OrbitControls(camera, renderer.domElement);
+
+		
+		
+		//Here we'll set our Directional light, its position, and add it to the scene.
+		let light = new THREE.DirectionalLight(0xffffff, 1);
+		light.position.setScalar(1);
+		scene.add(light, new THREE.AmbientLight(0xffffff, 0.5));
+		
+		//This part adds the grid (wireframe) at the base of the axis
+		let grid = new THREE.GridHelper(2, 20, 0xffff00, 0xffff00);
+		//this positions the grid
+		grid.position.y = -0.001;
+		//and adds it to the scene.
+		scene.add(grid, new THREE.AxesHelper(1));
+
+
+		//The following part handles the representation of the function itself.		
+		let graphGeom = new THREE.PlaneGeometry(1, 2, 20, 20);
+		//This handles the rotation degree of the function
+		graphGeom.rotateX(Math.PI * -0.5);
+
+		let graphMat = new THREE.MeshNormalMaterial({
+			side: THREE.DoubleSide, 
+			wireframe: false});
+
+		let graph = new THREE.Mesh(graphGeom, graphMat);
+		
+		// The next part handles the position of our graphed function -- f(x,z)
+		let pos = graphGeom.attributes.position;
+
+		for(let i = 0; i < pos.count; i++){
+		    	let x = pos.getX(i);
+		  	let z = pos.getZ(i);
+		    	pos.setY(i, Math.sin(x * z * Math.PI) * Math.cos(z * z * Math.PI * 0.5) * 0.75);
+		}
+		graphGeom.computeVertexNormals();
+		
+		//and then we add it to the scene.
+		scene.add(graph);
+		
+		window.addEventListener("resize", onResize);
+
+
+		//We create a render loop that will continuously output the function
+		renderer.setAnimationLoop(_ => {
+		  renderer.render(scene, camera);
+		})
+		
+		//The following block of code makes sure that everything that we have done is responsive
+		//and rendered in the right way.
+		function onResize(event) {
+		  camera.aspect = innerWidth / innerHeight;
+		  camera.updateProjectionMatrix();
+		  renderer.setSize(innerWidth, innerHeight);
+		}
+		
+		</script>
+</html>
